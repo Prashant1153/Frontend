@@ -1,0 +1,100 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-image: none;
+}
+:root {
+      --primary: #f5f5f5;
+      --sidebar-bg: #333;
+      --accent: #ff6f61;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+      --card-shadow-hover: rgba(0, 0, 0, 0.2);
+      --text-color: #333;
+      --button-bg: #ff6f61;
+      --button-hover-bg: #ff3b2e;
+      --button-text-color: #fff;
+      --input-border: #ccc;
+      --input-focus-border: #ff6f61;
+      --link-color: #ff6f61;
+      --link-hover-color: #ff3b2e;
+      --card-border-radius: 10px;
+      --card-padding: 1rem;
+      --card-margin: 1rem;
+      --card-bg: #fff;
+}
+/* .card-random {
+    background: var(--card-bg);
+    box-shadow: 0 4px 8px var(--card-shadow);
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    margin: var(--card-margin);
+    transition: box-shadow 0.3s ease;
+} */
+
+.card-random {
+  background-image: -moz-repeating-radial-gradient(circle at 10% 20%, #ff9a9e, #fad0c4 100px);
+    background:var(--card-bg_);
+    box-shadow: 0 4px 8px var(--card-shadow);
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    margin: var(--card-margin);
+    transition: box-shadow 0.3s ease;
+}
+.card-random:hover {
+    box-shadow: 0 8px 16px var(--card-shadow-hover);
+}
+    --text: #333;
+      --card-bg: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: var(--primary);
+      display: flex;
+      max-height: 100vh;
+    }
+ button {
+      background: var(--button-bg);
+      color: var(--button-text-color);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: var(--button-hover-bg);
+    }
+
+    input, textarea {
+      border: 1px solid var(--input-border);
+      padding: 0.5rem;
+      border-radius: 5px;
+      width: 100%;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--input-focus-border);
+      outline: none;
+    }
+
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    a:hover {
+      color: var(--link-hover-color);
+      flex: auto;
+    }
