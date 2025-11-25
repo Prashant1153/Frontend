@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extreme Registration Form</title>
+<style>
+body {
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(-45deg,#ff9a9e,#fad0c4,#a18cd1,#fbc2eb);
+  background-size:400% 400%;
+  animation:gradientBG 15s ease infinite;
+}
+@keyframes gradientBG{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+h1{
+  color:#fff;
+  margin-bottom:30px;
+  text-shadow:0 0 15px rgba(0,0,0,0.5);
+}
+form {
+  background: rgba(255,255,255,0.1);
+  padding:40px;
+  border-radius:20px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.5);
+  display:flex;
+  flex-direction:column;
+  gap:25px;
+  width:360px;
+}
+.input-group {
+  position: relative;
+}
+input {
+  width:100%;
+  padding:14px 15px;
+  border-radius:12px;
+  border:2px solid rgba(255,255,255,0.3);
+  outline:none;
+  font-size:16px;
+  background:rgba(255,255,255,0.1);
+  color:#fff;
+  transition: all 0.3s ease;
+}
+input:focus {
+  border-color:#00ff6a;
+  transform:scale(1.03);
+  box-shadow:0 6px 20px rgba(0,0,0,0.4);
+}
+label {
+  position:absolute;
+  left:15px;
+  top:50%;
+  transform:translateY(-50%);
+  color:rgba(255,255,255,0.7);
+  font-size:16px;
+  pointer-events:none;
+  transition:all 0.3s ease;
+}
+input:focus + label,
+input:not(:placeholder-shown) + label {
+  top:-10px;
+  left:10px;
+  font-size:12px;
+  color:#00ff6a;
+  background:rgba(255,255,255,0.1);
+  padding:0 5px;
+  border-radius:5px;
+}
+input.valid {border-color:#00ff6a;}
+input.invalid {border-color:#ff4c4c;}
+.error {
+  font-size:13px;
+  color:#ff4c4c;
+  height:16px;
+  margin-top:3px;
+  transition:all 0.3s ease;
+}
+button {
+  padding:14px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  background: rgba(255,255,255,0.2);
+  color:#fff;
+  transition: all 0.3s ease;
+  font-weight:bold;
+}
+button:hover {
+  background: rgba(255,255,255,0.5);
+  transform:scale(1.05);
+}
+.success-msg {
+  text-align:center;
+  font-size:18px;
+  color:#00ff6a;
+  text-shadow:0 0 10px rgba(0,255,100,0.5);
+  display:none;
+  animation:fadeIn 1s forwards;
+}
+@keyframes fadeIn {from{opacity:0;} to{opacity:1;}}
+</style>
+</head>
+<body>
+
+<h1>Register</h1>
+<form id="regForm" novalidate>
+  <div class="input-group">
+    <input type="text" id="name" placeholder=" " required>
+    <label for="name">Name</label>
+    <div class="error" id="nameError"></div>
+  </div>
+  <div class="input-group">
+    <input type="email" id="email" placeholder=" " required>
+    <label for="email">Email</label>
+    <div class="error" id="emailError"></div>
+  </div>
+  <div class="input-group">
+    <input type="password" id="password" placeholder=" " required>
+    <label for="password">Password</label>
+    <div class="error" id="passwordError"></div>
+  </div>
+  <button type="submit">Register</button>
+</form>
+
+<div class="success-msg" id="successMsg">Registration Successful! 🎉</div>
+
+<script>
+const form = document.getElementById('regForm');
+const nameInput = document.getElementById('name');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const nameError = document.getElementById('nameError');
+const emailError = document.getElementById('emailError');
+const passwordError = document.getElementById('passwordError');
+const successMsg = document.getElementById('successMsg');
+
+function validateName(){
+  if(nameInput.value.trim()===""){
+    nameError.textContent="Name is required";
+    nameInput.classList.add('invalid'); nameInput.classList.remove('valid');
+    return false;
+  } else {
+    nameError.textContent="";
+    nameInput.classList.add('valid'); nameInput.classList.remove('invalid');
+    return true;
+  }
+}
+
+function validateEmail(){
+  if(emailInput.value.trim()===""){
+    emailError.textContent="Email is required";
+    emailInput.classList.add('invalid'); emailInput.classList.remove('valid');
+    return false;
+  } else if(!emailInput.value.includes('@')){
+    emailError.textContent="Email must include '@'";
+    emailInput.classList.add('invalid'); emailInput.classList.remove('valid');
+    return false;
+  } else {
+    emailError.textContent="";
+    emailInput.classList.add('valid'); emailInput.classList.remove('invalid');
+    return true;
+  }
+}
+
+function validatePassword(){
+  if(passwordInput.value.trim()===""){
+    passwordError.textContent="Password is required";
+    passwordInput.classList.add('invalid'); passwordInput.classList.remove('valid');
+    return false;
+  } else if(passwordInput.value.length<8){
+    passwordError.textContent="Password must be at least 8 characters";
+    passwordInput.classList.add('invalid'); passwordInput.classList.remove('valid');
+    return false;
+  } else {
+    passwordError.textContent="";
+    passwordInput.classList.add('valid'); passwordInput.classList.remove('invalid');
+    return true;
+  }
+}
+
+nameInput.addEventListener('input', validateName);
+emailInput.addEventListener('input', validateEmail);
+passwordInput.addEventListener('input', validatePassword);
+
+form.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const validName = validateName();
+  const validEmail = validateEmail();
+  const validPassword = validatePassword();
+  if(validName && validEmail && validPassword){
+    successMsg.style.display='block';
+    form.reset();
+    [nameInput,emailInput,passwordInput].forEach(input=>input.classList.remove('valid'));
+    setTimeout(()=>successMsg.style.display='none',3000);
+  }
+});
+</script>
+
+</body>
+</html>
