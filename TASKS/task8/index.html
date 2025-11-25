@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extreme Weather App 2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body {
+  font-family:'Poppins',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  margin:0;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  transition: background 1s ease;
+  color:#fff;
+  padding:30px;
+  text-align:center;
+}
+h1 {
+  margin-bottom:20px;
+  text-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+#inputContainer {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+input {
+  padding:12px 20px;
+  border-radius:12px;
+  border:none;
+  outline:none;
+  font-size:16px;
+  min-width:200px;
+}
+button {
+  padding:12px 25px;
+  border:none;
+  border-radius:12px;
+  background:#00ff6a;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:16px;
+  transition:0.3s;
+}
+button:disabled {
+  background: rgba(0,255,106,0.5);
+  cursor:not-allowed;
+}
+button:hover:not(:disabled) {
+  background:#00cc55;
+}
+#spinner {
+  border:5px solid rgba(255,255,255,0.2);
+  border-top:5px solid #00ff6a;
+  border-radius:50%;
+  width:35px;
+  height:35px;
+  animation:spin 1s linear infinite;
+  display:none;
+  margin:20px auto;
+}
+@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+#weatherBox {
+  margin-top:20px;
+  background: rgba(255,255,255,0.1);
+  padding:25px 35px;
+  border-radius:15px;
+  max-width:400px;
+  width:90%;
+  box-shadow:0 0 15px rgba(0,0,0,0.3);
+  opacity:0;
+  transform:translateY(20px);
+  transition:opacity 0.5s ease, transform 0.5s ease;
+}
+#weatherBox.show {
+  opacity:1;
+  transform:translateY(0);
+}
+#error {
+  margin-top:20px;
+  color:#ff4c4c;
+  font-weight:bold;
+  opacity:0;
+  transition:opacity 0.5s ease;
+}
+#error.show {opacity:1;}
+img.weather-icon {width:80px; margin:10px 0;}
+</style>
+</head>
+<body>
+<h1>Extreme Weather App 2.0</h1>
+<div id="inputContainer">
+  <input type="text" id="cityInput" placeholder="Enter city name">
+  <button id="fetchBtn">Get Weather</button>
+</div>
+<div id="spinner"></div>
+<div id="weatherBox"></div>
+<div id="error"></div>
+<script>
+const cityInput=document.getElementById('cityInput');
+const fetchBtn=document.getElementById('fetchBtn');
+const weatherBox=document.getElementById('weatherBox');
+const errorBox=document.getElementById('error');
+const spinner=document.getElementById('spinner');
+const API_KEY='YOUR_API_KEY_HERE';
+
+function updateBackground(condition){
+  let bg='';
+  condition=condition.toLowerCase();
+  if(condition.includes('cloud')) bg='linear-gradient(135deg,#bdc3c7,#2c3e50)';
+  else if(condition.includes('rain')) bg='linear-gradient(135deg,#4e54c8,#8f94fb)';
+  else if(condition.includes('snow')) bg='linear-gradient(135deg,#83a4d4,#b6fbff)';
+  else if(condition.includes('clear')) bg='linear-gradient(135deg,#fbc2eb,#a6c1ee)';
+  else bg='linear-gradient(135deg,#667eea,#764ba2)';
+  document.body.style.background=bg;
+}
+
+async function getWeather(){
+  const city=cityInput.value.trim();
+  if(!city){showError('Please enter a city name'); return;}
+  spinner.style.display='block';
+  weatherBox.classList.remove('show');
+  weatherBox.innerHTML='';
+  errorBox.classList.remove('show');
+  try{
+    const res=await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
+    const data=await res.json();
+    if(data.cod!==200) throw new Error(data.message);
+    updateBackground(data.weather[0].main);
+    weatherBox.innerHTML=`
+      <h2>${data.name}, ${data.sys.country}</h2>
+      <img class="weather-icon" src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="icon">
+      <p><strong>Temperature:</strong> ${data.main.temp}°C</p>
+      <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+      <p><strong>Condition:</strong> ${data.weather[0].description}</p>
+    `;
+    setTimeout(()=>weatherBox.classList.add('show'),50);
+  }catch(err){
+    showError(`Error: ${err.message}`);
+  }finally{
+    spinner.style.display='none';
+  }
+}
+
+function showError(msg){
+  errorBox.textContent=msg;
+  errorBox.classList.add('show');
+}
+
+fetchBtn.addEventListener('click', getWeather);
+cityInput.addEventListener('keypress', e=>{
+  if(e.key==='Enter') getWeather();
+});
+</script>
+</body>
+</html>

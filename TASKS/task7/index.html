@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random joke genetor created by prashant </title>
+<style>
+body {
+  font-family:'Poppins',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background: linear-gradient(135deg,#ff9a9e,#fad0c4,#a18cd1,#fbc2eb);
+  color:#fff;
+  padding:40px;
+  text-align:center;
+}
+h1 {
+  margin-bottom:30px;
+  text-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+#jokeBox {
+  background: rgba(255,255,255,0.1);
+  padding:25px 35px;
+  border-radius:15px;
+  box-shadow:0 0 15px rgba(0,0,0,0.3);
+  max-width:500px;
+  margin-bottom:20px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+#jokeBox.fade {
+  opacity:0;
+  transform: translateY(-20px);
+}
+button {
+  padding:12px 25px;
+  border:none;
+  border-radius:12px;
+  background:#00ff6a;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:16px;
+  transition:0.3s;
+}
+button:disabled {
+  background: rgba(0,255,106,0.5);
+  cursor:not-allowed;
+}
+button:hover:not(:disabled) {
+  background:#00cc55;
+}
+#spinner {
+  border:5px solid rgba(255,255,255,0.2);
+  border-top:5px solid #00ff6a;
+  border-radius:50%;
+  width:30px;
+  height:30px;
+  animation:spin 1s linear infinite;
+  display:none;
+  margin:20px auto;
+}
+@keyframes spin {
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+</style>
+</head>
+<body>
+<h1>Random Joke Generator</h1>
+<div id="jokeBox"><p>Click "Next Joke" to get started!</p></div>
+<div id="spinner"></div>
+<button id="nextJokeBtn">Next Joke</button>
+<script>
+const jokeBox=document.getElementById('jokeBox');
+const nextBtn=document.getElementById('nextJokeBtn');
+const spinner=document.getElementById('spinner');
+
+function fetchJoke(){
+  nextBtn.disabled=true;
+  spinner.style.display='block';
+  jokeBox.classList.add('fade');
+
+  fetch('https://official-joke-api.appspot.com/random_joke')
+    .then(res=>res.json())
+    .then(data=>{
+      setTimeout(()=>{
+        jokeBox.innerHTML=`<p><strong>Setup:</strong> ${data.setup}</p><p><strong>Punchline:</strong> ${data.punchline}</p>`;
+        jokeBox.classList.remove('fade');
+        nextBtn.disabled=false;
+        spinner.style.display='none';
+      },300);
+    })
+    .catch(err=>{
+      jokeBox.innerHTML='<p>Oops! Something went wrong. Try again.</p>';
+      jokeBox.classList.remove('fade');
+      nextBtn.disabled=false;
+      spinner.style.display='none';
+      console.error(err);
+    });
+}
+
+nextBtn.addEventListener('click', fetchJoke);
+</script>
+</body>
+</html>
