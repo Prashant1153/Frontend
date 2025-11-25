@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Task 1 by Prashant Pandey </title>
+
+<style>
+/* ---------------------------------------
+      GLOBAL ANIMATED BACKGROUND
+--------------------------------------- */
+body {
+    margin: 0;
+    font-family: Poppins, sans-serif;
+    background: linear-gradient(120deg, #05001a, #28004d, #7000ff, #240046);
+    background-size: 400% 400%;
+    animation: bgAnimate 15s infinite alternate ease-in-out;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: #fff;
+}
+@keyframes bgAnimate {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 50% 100%; }
+    100% { background-position: 100% 50%; }
+}
+
+/* Light Mode */
+body.light-mode {
+    background: linear-gradient(120deg, #ffffff, #dadada, #ececec);
+    color: #000;
+}
+
+/* ---------------------------------------
+      MAIN CONTAINER
+--------------------------------------- */
+.container {
+    width: 480px;
+    margin: 80px auto;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 25px rgba(255,255,255,0.2);
+    animation: fadeIn 1s ease-in-out;
+    position: relative;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Title */
+h1 {
+    text-align: center;
+    letter-spacing: 2px;
+    font-size: 28px;
+    text-shadow: 0 0 10px cyan;
+}
+
+/* Dark/Light Mode Toggle */
+.toggle {
+    position: absolute;
+    top: -45px;
+    right: 10px;
+    cursor: pointer;
+}
+
+/* Search Bar */
+.search-box input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Task List */
+#taskList {
+    margin-top: 20px;
+    padding: 0;
+}
+#taskList li {
+    list-style: none;
+    padding: 12px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    cursor: grab;
+}
+
+/* Completed */
+.completed span {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Buttons */
+.task-buttons button {
+    margin-left: 8px;
+    padding: 6px 10px;
+    font-size: 11px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.complete-btn { background: #4caf50; }
+.edit-btn { background: #2196f3; }
+.delete-btn { background: #f44336; }
+
+/* Floating Add Button */
+.add-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #00eaff;
+    padding: 18px;
+    font-size: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 20px cyan;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: #fff;
+    color: #000;
+    padding: 20px;
+    width: 360px;
+    border-radius: 15px;
+}
+
+/* Confetti Canvas */
+#confetti {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div class="container">
+    <div class="toggle">
+        <img src="https://img.icons8.com/fluency/48/sun.png" width="40" id="modeIcon">
+    </div>
+
+    <h1>Prashant Task Manager</h1>
+
+    <div class="search-box">
+        <input type="text" id="search" placeholder="Search tasks...">
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <button class="clear-btn" id="clearAll" style="
+        width:100%; margin-top:15px; padding:10px;
+        background:red; border:none; color:#fff; border-radius:10px;
+    ">Clear All</button>
+
+    <button class="export-btn" id="exportTxt" style="
+        width:48%; margin-top:15px; padding:10px;
+        background:#673ab7; border:none; color:#fff; border-radius:10px;
+    ">Export TXT</button>
+
+    <button class="export-btn" id="exportJson" style="
+        width:48%; margin-top:15px; padding:10px;
+        background:#0091ea; border:none; color:#fff; border-radius:10px;
+    ">Export JSON</button>
+</div>
+
+<button class="add-btn" id="openModal">+</button>
+
+<!-- Modal -->
+<div class="modal" id="modalBox">
+    <div class="modal-content">
+        <h3>Add New Task</h3>
+
+        <input type="text" id="modalInput" placeholder="Enter task"><br><br>
+
+        <button id="voiceBtn" style="
+            background:orange; padding:10px; border:none; border-radius:10px;
+        ">🎤 Voice Input</button>
+
+        <button id="addTaskModal" style="
+            background:#673ab7; padding:10px; border:none; border-radius:10px; color:#fff;
+        ">Add</button>
+    </div>
+</div>
+
+<script>
+/* ============================================
+     INITIAL SETUP
+============================================ */
+const taskList = document.getElementById("taskList");
+const modal = document.getElementById("modalBox");
+const modalInput = document.getElementById("modalInput");
+const addTaskModal = document.getElementById("addTaskModal");
+const openModal = document.getElementById("openModal");
+const modeIcon = document.getElementById("modeIcon");
+const search = document.getElementById("search");
+const clearAll = document.getElementById("clearAll");
+const voiceBtn = document.getElementById("voiceBtn");
+
+const categorySelect = document.getElementById("category");
+const prioritySelect = document.getElementById("priority");
+const dueDateInput = document.getElementById("dueDate");
+
+/* ============================================
+     LOAD TASKS
+============================================ */
+document.addEventListener("DOMContentLoaded", () => {
+    loadTasks();
+
+    if (localStorage.getItem("mode") === "light") {
+        document.body.classList.add("light-mode");
+        modeIcon.src = "https://img.icons8.com/fluency/48/moon.png";
+    }
+});
+
+/* ============================================
+      DARK MODE
+============================================ */
+modeIcon.onclick = () => {
+    document.body.classList.toggle("light-mode");
+    if (document.body.classList.contains("light-mode")) {
+        localStorage.setItem("mode", "light");
+        modeIcon.src = "https://img.icons8.com/fluency/48/moon.png";
+    } else {
+        localStorage.setItem("mode", "dark");
+        modeIcon.src = "https://img.icons8.com/fluency/48/sun.png";
+    }
+};
+
+/* ============================================
+     OPEN/CLOSE MODAL
+============================================ */
+openModal.onclick = () => modal.style.display = "flex";
+window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+
+/* ============================================
+     ADD TASK
+============================================ */
+addTaskModal.onclick = () => {
+    let text = modalInput.value.trim();
+    if (!text) return alert("Enter a task");
+
+    let category = categorySelect.value;
+    let priority = prioritySelect.value;
+    let dueDate = dueDateInput.value;
+
+    createTask(text, category, priority, dueDate, false);
+    saveTask(text, category, priority, dueDate, false);
+
+    speak("Task created by Prashant");
+    confettiBurst();
+
+    modalInput.value = "";
+    modal.style.display = "none";
+};
+
+/* ============================================
+     CREATE TASK ELEMENT
+============================================ */
+function createTask(text, category, priority, dueDate, completed) {
+    const li = document.createElement("li");
+    li.draggable = true;
+
+    const dueInfo = dueDate ? ` (Due: ${dueDate})` : "";
+
+    li.innerHTML = `
+        <span>${text} 
+        <small style="color:yellow">[${category}]</small> 
+        <small style="color:${priorityColor(priority)}">(${priority})</small>
+        ${dueInfo}
+        </span>
+        <div class="task-buttons">
+            <button class="complete-btn">✔</button>
+            <button class="edit-btn">✏</button>
+            <button class="delete-btn">🗑</button>
+        </div>
+    `;
+
+    if (completed) li.classList.add("completed");
+
+    /* Complete */
+    li.querySelector(".complete-btn").onclick = () => {
+        li.classList.toggle("completed");
+        toggleComplete(text);
+    };
+
+    /* Edit */
+    li.querySelector(".edit-btn").onclick = () => {
+        const newTask = prompt("Edit task:", text);
+        if (newTask && newTask.trim() !== "") {
+            updateTask(text, newTask);
+            li.querySelector("span").innerHTML = newTask;
+        }
+    };
+
+    /* Delete */
+    li.querySelector(".delete-btn").onclick = () => {
+        li.remove();
+        removeTask(text);
+    };
+
+    /* Drag & Drop */
+    li.addEventListener("dragstart", dragStart);
+    li.addEventListener("dragover", dragOver);
+    li.addEventListener("drop", drop);
+
+    taskList.appendChild(li);
+}
+
+/* Priority Color */
+function priorityColor(level) {
+    return level === "High" ? "red" : level === "Medium" ? "orange" : "cyan";
+}
+
+/* ============================================
+     STORAGE FUNCTIONS
+============================================ */
+function saveTask(text, category, priority, dueDate, completed) {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.push({ text, category, priority, dueDate, completed });
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function loadTasks() {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(t => createTask(t.text, t.category, t.priority, t.dueDate, t.completed));
+}
+
+function updateTask(oldText, newText) {
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(t => { if (t.text === oldText) t.text = newText; });
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function toggleComplete(text) {
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(t => { if (t.text === text) t.completed = !t.completed; });
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function removeTask(text) {
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks = tasks.filter(t => t.text !== text);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+/* ============================================
+     SEARCH
+============================================ */
+search.onkeyup = () => {
+    const query = search.value.toLowerCase();
+    document.querySelectorAll("#taskList li").forEach(li => {
+        li.style.display = li.innerText.toLowerCase().includes(query) ? "flex" : "none";
+    });
+};
+
+/* ============================================
+     CLEAR ALL
+============================================ */
+clearAll.onclick = () => {
+    if (confirm("Delete all tasks?")) {
+        localStorage.removeItem("tasks");
+        taskList.innerHTML = "";
+    }
+};
+
+/* ============================================
+     EXPORT TXT + JSON
+============================================ */
+document.getElementById("exportTxt").onclick = () => {
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    let text = tasks.map(t => t.text).join("\n");
+
+    let blob = new Blob([text], { type: "text/plain" });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tasks.txt";
+    a.click();
+};
+
+document.getElementById("exportJson").onclick = () => {
+    let tasks = localStorage.getItem("tasks");
+    let blob = new Blob([tasks], { type: "application/json" });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tasks.json";
+    a.click();
+};
+
+/* ============================================
+     VOICE INPUT (Speech Recognition)
+============================================ */
+voiceBtn.onclick = () => {
+    let rec = new webkitSpeechRecognition();
+    rec.lang = "en-US";
+    rec.onresult = (e) => modalInput.value = e.results[0][0].transcript;
+    rec.start();
+};
+
+/* ============================================
+     SPEAKING FUNCTION (Male Voice)
+============================================ */
+function speak(text) {
+    let msg = new SpeechSynthesisUtterance(text);
+    msg.pitch = 1;
+    msg.rate = 1;
+    msg.voice = speechSynthesis.getVoices().find(v => v.name.includes("Male")) ||
+                speechSynthesis.getVoices()[0];
+    speechSynthesis.speak(msg);
+}
+
+/* ============================================
+     DRAG & DROP
+============================================ */
+let dragged;
+function dragStart(e) { dragged = this; }
+function dragOver(e) { e.preventDefault(); }
+function drop() {
+    if (dragged !== this) {
+        this.parentNode.insertBefore(dragged, this);
+        saveNewOrder();
+    }
+}
+
+function saveNewOrder() {
+    let newOrder = [];
+    document.querySelectorAll("#taskList li").forEach(li => {
+        newOrder.push(li.innerText.trim());
+    });
+}
+
+/* ============================================
+     CONFETTI
+============================================ */
+function confettiBurst() {
+    let canvas = document.getElementById("confetti");
+    let ctx = canvas.getContext("2d");
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    const particles = [];
+    for (let i = 0; i < 80; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height,
+            size: Math.random() * 5 + 2,
+            speed: Math.random() * 4 + 2,
+            color: `hsl(${Math.random() * 360},100%,50%)`
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        particles.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x,p.y,p.size,p.size);
+            p.y -= p.speed;
+        });
+    }
+    let interval = setInterval(draw, 20);
+    setTimeout(() => {
+        clearInterval(interval);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+    }, 1000);
+}
+</script>
+
+</body>
+</html>
