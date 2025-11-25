@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extreme Word Counter 3.0</title>
+<style>
+body {
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(-45deg,#ff9a9e,#fad0c4,#a18cd1,#fbc2eb);
+  background-size:400% 400%;
+  animation:gradientBG 15s ease infinite;
+  color:#fff;
+}
+@keyframes gradientBG{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+h1{text-shadow:0 0 10px rgba(0,0,0,0.5); margin-bottom:20px; text-align:center;}
+textarea{width:350px; height:180px; padding:15px; border-radius:20px; border:none; outline:none;
+  font-size:16px; backdrop-filter:blur(10px); background:rgba(255,255,255,0.15); color:#fff; resize:none;
+  box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:all 0.3s ease;}
+textarea::placeholder{color:rgba(255,255,255,0.7);}
+textarea:focus{transform:scale(1.02); box-shadow:0 12px 32px rgba(0,0,0,0.4);}
+.counter{margin-top:10px; font-weight:bold; font-size:18px; transition:color 0.3s ease;}
+.progress-container{width:350px; height:12px; background:rgba(255,255,255,0.2); border-radius:10px; margin-top:10px; overflow:hidden;}
+.progress-bar{height:100%; width:0%; background:linear-gradient(90deg,#00ff6a,#00b3ff); border-radius:10px; transition:width 0.2s ease, background 0.3s ease;}
+#confetti{position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;}
+</style>
+</head>
+<body>
+
+<h1>Extreme Word Counter 3.0</h1>
+<textarea id="myText" placeholder="Start typing..."></textarea>
+<div class="counter" id="charCounter">Characters left: 100</div>
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<canvas id="confetti"></canvas>
+<audio id="finalSound" src="https://www.soundjay.com/button/sounds/button-10.mp3" preload="auto"></audio>
+
+<script>
+const textarea=document.getElementById("myText");
+const counter=document.getElementById("charCounter");
+const progressBar=document.getElementById("progressBar");
+const confettiCanvas=document.getElementById("confetti");
+const ctx=confettiCanvas.getContext("2d");
+const finalSound=document.getElementById("finalSound");
+confettiCanvas.width=window.innerWidth; 
+confettiCanvas.height=window.innerHeight;
+
+const maxChars=100;
+let confettiActive=false;
+let finalSoundPlayed=false;
+let voicesLoaded=false;
+let voices=[];
+let displayedCount=maxChars; 
+
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices();
+  voicesLoaded = true;
+};
+
+function initAudio(){
+  speechSynthesis.getVoices();
+  document.removeEventListener('click', initAudio);
+  document.removeEventListener('keydown', initAudio);
+}
+document.addEventListener('click', initAudio);
+document.addEventListener('keydown', initAudio);
+
+
+function speakWord(word){
+  if(!voicesLoaded || word.trim()==="") return;
+  const msg=new SpeechSynthesisUtterance(word);
+  msg.rate=1.0;
+  msg.pitch=1;
+  msg.voice=voices.find(v=>v.name.toLowerCase().includes("male")) || voices[0];
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
+}
+
+
+function startConfetti(){
+  const particles=[];
+  for(let i=0;i<200;i++){
+    particles.push({
+      x:Math.random()*confettiCanvas.width,
+      y:Math.random()*-confettiCanvas.height,
+      r:Math.random()*8+3,
+      d:Math.random()*15+5,
+      color:`hsl(${Math.random()*360},100%,50%)`,
+      tilt:Math.random()*15-15
+    });
+  }
+  let angle=0;
+  function draw(){
+    ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+    particles.forEach(p=>{
+      ctx.beginPath();
+      ctx.moveTo(p.x+p.tilt,p.y);
+      ctx.lineTo(p.x+p.tilt+p.r/2,p.y+p.r);
+      ctx.lineTo(p.x+p.tilt-p.r/2,p.y+p.r);
+      ctx.closePath();
+      ctx.fillStyle=p.color; ctx.fill();
+      p.y+=Math.sin(angle+p.d)+2; p.x+=Math.sin(angle);
+      if(p.y>confettiCanvas.height){p.y=Math.random()*-20;p.x=Math.random()*confettiCanvas.width;}
+    });
+    angle+=0.02;
+    if(confettiActive) requestAnimationFrame(draw); else ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  }
+  draw();
+  setTimeout(()=>{confettiActive=false;},2500);
+}
+
+function animateCounter(target){
+  if(displayedCount===target) return;
+  const step = (target - displayedCount) / 5; // smooth transition
+  displayedCount += step;
+  if(Math.abs(displayedCount - target)<1) displayedCount=target;
+  counter.textContent="Characters left: "+Math.round(displayedCount);
+  requestAnimationFrame(()=>animateCounter(target));
+}
+
+
+textarea.addEventListener("input", ()=>{
+  let typedText=textarea.value;
+  const typedLength=typedText.length;
+
+ 
+  if(typedLength>maxChars){
+    typedText=typedText.substring(0,maxChars);
+    textarea.value=typedText;
+  }
+  const remaining=maxChars-typedText.length;
+
+  animateCounter(remaining);
+
+ 
+  if(remaining>50){counter.style.color="#00ff6a"; progressBar.style.background="linear-gradient(90deg,#00ff6a,#00b3ff)";}
+  else if(remaining>20){counter.style.color="#ffa500"; progressBar.style.background="linear-gradient(90deg,#ffa500,#ff4500)";}
+  else{counter.style.color="#ff0000"; progressBar.style.background="linear-gradient(90deg,#ff0000,#8b0000)";}
+  progressBar.style.width=(typedText.length/maxChars*100)+"%";
+
+  const lastChar=typedText.slice(-1);
+  if(lastChar===" " || lastChar==="." || lastChar==="," || lastChar==="!" || lastChar==="?"){
+    const words=typedText.trim().split(/\s+/);
+    const lastWord=words[words.length-1];
+    speakWord(lastWord);
+  }
+
+  if(remaining===0 && !finalSoundPlayed){
+    finalSoundPlayed=true;
+    confettiActive=true;
+    startConfetti();
+    finalSound.volume=1.0;
+    finalSound.play();
+  } else if(remaining>0){
+    finalSoundPlayed=false;
+  }
+});
+</script>
+</body>
+</html>

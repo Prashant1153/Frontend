@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Carousel Task 3</title>
+<style>
+body {
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(-45deg,#89f7fe,#66a6ff,#ff9a9e,#fad0c4);
+  background-size:400% 400%;
+  animation:gradientBG 15s ease infinite;
+  color:#fff;
+}
+@keyframes gradientBG{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+h1{text-shadow:0 0 10px rgba(0,0,0,0.5); margin-bottom:20px; text-align:center;}
+
+.carousel-container {
+  position: relative;
+  width: 400px;
+  height: 250px;
+  overflow: hidden;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.carousel-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.8s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+
+.carousel-container img.active {
+  opacity: 1;
+}
+
+.buttons {
+  margin-top: 15px;
+  display: flex;
+  gap: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border:none;
+  border-radius: 8px;
+  cursor:pointer;
+  background: rgba(255,255,255,0.2);
+  color:#fff;
+  transition: all 0.3s ease;
+}
+button:hover {
+  background: rgba(255,255,255,0.5);
+  transform: scale(1.05);
+}
+</style>
+</head>
+<body>
+
+<h1>Image Carousel</h1>
+<div class="carousel-container" id="carousel">
+  <img src="https://picsum.photos/id/1015/400/250" class="active">
+  <img src="https://picsum.photos/id/1025/400/250">
+  <img src="https://picsum.photos/id/1035/400/250">
+  <img src="https://picsum.photos/id/1045/400/250">
+  <img src="https://picsum.photos/id/1055/400/250">
+</div>
+
+<div class="buttons">
+  <button id="prev">Previous</button>
+  <button id="next">Next</button>
+</div>
+
+<script>
+const carousel = document.getElementById('carousel');
+const images = carousel.querySelectorAll('img');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+let currentIndex = 0;
+let interval;
+
+
+function showImage(index){
+  images.forEach((img,i)=>{
+    img.classList.toggle('active', i===index);
+  });
+}
+
+
+function nextImage(){
+  currentIndex = (currentIndex + 1) % images.length;
+  showImage(currentIndex);
+}
+
+
+function prevImage(){
+  currentIndex = (currentIndex - 1 + images.length) % images.length;
+  showImage(currentIndex);
+}
+
+
+nextBtn.addEventListener('click', ()=>{
+  nextImage();
+  resetInterval();
+});
+prevBtn.addEventListener('click', ()=>{
+  prevImage();
+  resetInterval();
+});
+
+
+function startInterval(){
+  interval = setInterval(nextImage, 3000);
+}
+
+
+function resetInterval(){
+  clearInterval(interval);
+  startInterval();
+}
+
+
+carousel.addEventListener('mouseenter', ()=>clearInterval(interval));
+carousel.addEventListener('mouseleave', ()=>startInterval());
+
+
+showImage(currentIndex);
+startInterval();
+</script>
+
+</body>
+</html>
